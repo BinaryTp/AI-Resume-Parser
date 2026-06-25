@@ -15,6 +15,15 @@ if uploaded_file is not None:
 
     with pdfplumber.open(uploaded_file) as pdf:
       for page in pdf.pages:
-        text += page.extract_text() + "\n"
+          extracted_text = page.extract_text()
 
-st.text_area("Extracted Text", text, height=300)
+          if extracted_text:
+              text += extracted_text + "\n"
+
+    st.subheader("Extracted Resume Text")
+
+    st.text_area(
+        "Resume Content",
+        text,
+        height=300
+    )
