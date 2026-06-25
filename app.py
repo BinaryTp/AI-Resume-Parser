@@ -15,6 +15,6 @@ if uploaded_file is not None:
 
     with pdfplumber.open(uploaded_file) as pdf:
       for page in pdf.pages:
-        text += page.extract_text()
+        text += page.extract_text() + "\n"
 
 st.text_area("Extracted Text", text, height=300)
