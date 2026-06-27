@@ -1,5 +1,10 @@
 import streamlit as st
-import pdfplumber
+from utils import extract_text_from_pdf
+from parser import (
+    extract_email,
+    extract_phone,
+    extract_name
+)
 
 st.title("AI Resume Parser")
 
@@ -9,21 +14,33 @@ uploaded_file = st.file_uploader(
 )
 
 if uploaded_file is not None:
+
     st.success("Resume uploaded successfully!")
 
-    text = ""
+    text = extract_text_from_pdf(uploaded_file)
 
-    with pdfplumber.open(uploaded_file) as pdf:
-      for page in pdf.pages:
-          extracted_text = page.extract_text()
+    st.write("Length of extracted text:", len(text))
 
-          if extracted_text:
-              text += extracted_text + "\n"
+    st.text_area(
+        "Debug OCR Text",
+        text,
+        height=200
+    )
+
+    email = extract_email(text)
+
+    phone = extract_phone(text)
+
+    name = extract_name(text)
 
     st.subheader("Extracted Resume Text")
 
-    st.text_area(
-        "Resume Content",
-        text,
-        height=300
-    )
+    st.subheader("Extracted Information")
+
+
+    st.write("📧 Email :", email)
+
+    st.write("📱 Phone :", phone)
+
+    st.write("👤 Name :", name)
+    st.text_area("OCR Output", text, height=300)
