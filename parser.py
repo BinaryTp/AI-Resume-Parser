@@ -1,3 +1,4 @@
+from email.mime import text
 import re
 def extract_email(text):
 
@@ -37,3 +38,37 @@ def extract_name(text):
             return line.title()
 
     return "Not Found"
+
+
+
+def extract_skills(text):
+
+    skills_database = [
+        "Python",
+        "Java",
+        "C++",
+        "JavaScript",
+        "React",
+        "Node.js",
+        "MongoDB",
+        "MySQL",
+        "SQL",
+        "Git",
+        "GitHub",
+        "Machine Learning",
+        "TensorFlow",
+        "PyTorch",
+        "Streamlit",
+        "Flask",
+        "Django"
+    ]
+
+    found_skills = []
+
+    for skill in skills_database:
+
+        if skill.lower() in text.lower():
+
+            found_skills.append(skill)
+
+    return found_skills

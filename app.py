@@ -3,7 +3,8 @@ from utils import extract_text_from_pdf
 from parser import (
     extract_email,
     extract_phone,
-    extract_name
+    extract_name,
+    extract_skills
 )
 
 st.title("AI Resume Parser")
@@ -33,7 +34,8 @@ if uploaded_file is not None:
 
     name = extract_name(text)
 
-    st.subheader("Extracted Resume Text")
+    skills = extract_skills(text)
+
 
     st.subheader("Extracted Information")
 
@@ -43,7 +45,12 @@ if uploaded_file is not None:
     st.write("📱 Phone :", phone)
 
     st.write("👤 Name :", name)
-    st.text_area("OCR Output", text, height=300)
+
+    st.subheader("💻 Skills")
+
+    for skill in skills:
+        st.write("✔", skill)
+    
 
 
     
