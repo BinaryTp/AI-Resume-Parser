@@ -44,3 +44,6 @@ if uploaded_file is not None:
 
     st.write("👤 Name :", name)
     st.text_area("OCR Output", text, height=300)
+
+
+    
