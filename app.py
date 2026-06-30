@@ -6,6 +6,8 @@ from parser import (
     extract_name,
     extract_skills
 )
+from llm import analyze_resume
+
 
 st.title("AI Resume Parser")
 
@@ -19,6 +21,7 @@ if uploaded_file is not None:
     st.success("Resume uploaded successfully!")
 
     text = extract_text_from_pdf(uploaded_file)
+    ai_response = analyze_resume(text)
 
     st.write("Length of extracted text:", len(text))
 
@@ -39,18 +42,44 @@ if uploaded_file is not None:
 
     st.subheader("Extracted Information")
 
+    st.subheader("👤 Candidate Information")
 
-    st.write("📧 Email :", email)
-
-    st.write("📱 Phone :", phone)
-
-    st.write("👤 Name :", name)
+    st.write(f"**Name:** {ai_response['name']}")
+    st.write(f"**Email:** {ai_response['email']}")
+    st.write(f"**Phone:** {ai_response['phone']}")
 
     st.subheader("💻 Skills")
 
-    for skill in skills:
-        st.write("✔", skill)
+    for skill in ai_response["skills"]:
+        st.write(f"✅ {skill}")
     
+    st.subheader("🎓 Education")
+
+    for edu in ai_response["education"]:
+
+        st.markdown(f"### {edu['degree']}")
+
+        st.write(f"🏫 Institution: {edu['institution']}")
+
+        st.write(f"📅 Years: {edu['years']}")
+
+        st.write(f"📖 Details: {edu['details']}")
+
+        st.divider()
+
+
+    st.subheader("📂 Projects")
+
+    for project in ai_response["projects"]:
+
+        with st.expander(project["title"]):
+
+            st.write(project["description"])
+    
+    st.subheader("📝 Professional Summary")
+
+    st.info(ai_response["summary"])
+    st.code(ai_response, language="json")
 
 
     
