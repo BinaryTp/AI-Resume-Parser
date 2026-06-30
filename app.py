@@ -1,85 +1,247 @@
 import streamlit as st
-from utils import extract_text_from_pdf
-from parser import (
-    extract_email,
-    extract_phone,
-    extract_name,
-    extract_skills
+
+# -------------------- PAGE CONFIG -------------------- #
+st.set_page_config(
+    page_title="AI Resume Parser",
+    page_icon="📄",
+    layout="wide"
 )
+
+# -------------------- IMPORTS -------------------- #
+from utils import extract_text_from_pdf
 from llm import analyze_resume
 
 
-st.title("AI Resume Parser")
+# -------------------- LOAD CSS -------------------- #
+def load_css():
+    with open("css/style.css") as f:
+        st.markdown(
+            f"<style>{f.read()}</style>",
+            unsafe_allow_html=True
+        )
 
+
+load_css()
+
+
+# -------------------- HEADER -------------------- #
+st.markdown("""
+<div style="text-align:center; padding:20px;">
+
+<h1 style="color:#4F8BF9; font-size:55px;">
+🤖 AI Resume Parser
+</h1>
+
+<h4 style="color:gray;">
+Powered by Google Gemini AI
+</h4>
+
+<p style="color:#A0A0A0;">
+Upload your resume and let AI automatically extract structured information
+such as personal details, skills, education, projects and professional summary.
+</p>
+
+</div>
+""", unsafe_allow_html=True)
+
+st.divider()
+
+
+# -------------------- FILE UPLOADER -------------------- #
 uploaded_file = st.file_uploader(
     "Upload Resume",
     type=["pdf"]
 )
 
-if uploaded_file is not None:
+
+# ===========================================================
+#                      MAIN APPLICATION
+# ===========================================================
+
+if uploaded_file:
 
     st.success("Resume uploaded successfully!")
 
-    text = extract_text_from_pdf(uploaded_file)
-    ai_response = analyze_resume(text)
+    # Extract text
+    resume_text = extract_text_from_pdf(uploaded_file)
 
-    st.write("Length of extracted text:", len(text))
+    # Gemini Analysis
+    ai_response = analyze_resume(resume_text)
 
-    st.text_area(
-        "Debug OCR Text",
-        text,
-        height=200
-    )
+   
+    # ===================================================
+    # Candidate Information + Skills
+    # ===================================================
 
-    email = extract_email(text)
+    left, right = st.columns([1, 1])
 
-    phone = extract_phone(text)
+    with left:
 
-    name = extract_name(text)
+        st.markdown("""
+        <div class="card">
+        <div class="section-title">
+        👤 Candidate Information
+        </div>
+        """, unsafe_allow_html=True)
 
-    skills = extract_skills(text)
+        st.write(f"**👤 Name:** {ai_response.get('name', 'Not Available')}")
+        st.write(f"**📧 Email:** {ai_response.get('email', 'Not Available')}")
+        st.write(f"**📱 Phone:** {ai_response.get('phone', 'Not Available')}")
 
+        st.markdown("</div>", unsafe_allow_html=True)
 
-    st.subheader("Extracted Information")
+    with right:
 
-    st.subheader("👤 Candidate Information")
+        st.subheader("💻 Skills")
 
-    st.write(f"**Name:** {ai_response['name']}")
-    st.write(f"**Email:** {ai_response['email']}")
-    st.write(f"**Phone:** {ai_response['phone']}")
+        skills = ai_response.get("skills", [])
 
-    st.subheader("💻 Skills")
+        if skills:
+            for skill in skills:
+                st.success(skill)
+        else:
+            st.info("No skills found.")
 
-    for skill in ai_response["skills"]:
-        st.write(f"✅ {skill}")
-    
-    st.subheader("🎓 Education")
+    # ===================================================
+    # EDUCATION
+    # ===================================================
 
-    for edu in ai_response["education"]:
+    education = ai_response.get("education", [])
 
-        st.markdown(f"### {edu['degree']}")
+    if education:
 
-        st.write(f"🏫 Institution: {edu['institution']}")
+        st.subheader("🎓 Education")
 
-        st.write(f"📅 Years: {edu['years']}")
+        for edu in education:
 
-        st.write(f"📖 Details: {edu['details']}")
+            st.markdown(f"### {edu.get('degree', '')}")
 
-        st.divider()
+            st.write(f"🏫 Institution: {edu.get('institution', '')}")
 
+            st.write(f"📍 Location: {edu.get('location', '')}")
 
-    st.subheader("📂 Projects")
+            start = edu.get("start_date", "")
+            end = edu.get("end_date", "")
 
-    for project in ai_response["projects"]:
+            if start or end:
+                st.write(f"📅 Duration: {start} - {end}")
 
-        with st.expander(project["title"]):
+            st.write(f"🎖 Grade: {edu.get('grade', '')}")
 
-            st.write(project["description"])
-    
-    st.subheader("📝 Professional Summary")
+            st.divider()
 
-    st.info(ai_response["summary"])
-    st.code(ai_response, language="json")
+    # ===================================================
+    # EXPERIENCE
+    # ===================================================
 
+    experience = ai_response.get("experience", [])
 
-    
+    if experience:
+
+        st.subheader("💼 Experience")
+
+        for exp in experience:
+
+            with st.expander(exp.get("company", "Experience")):
+
+                st.write(f"**Role:** {exp.get('role', '')}")
+                st.write(f"**Duration:** {exp.get('duration', '')}")
+                st.write(exp.get("description", ""))
+
+    # ===================================================
+    # INTERNSHIPS
+    # ===================================================
+
+    internships = ai_response.get("internships", [])
+
+    if internships:
+
+        st.subheader("🏢 Internships")
+
+        for intern in internships:
+
+            with st.expander(intern.get("organization", "Internship")):
+
+                st.write(f"**Role:** {intern.get('role', '')}")
+                st.write(f"**Duration:** {intern.get('duration', '')}")
+                st.write(intern.get("description", ""))
+
+    # ===================================================
+    # PROJECTS
+    # ===================================================
+
+    projects = ai_response.get("projects", [])
+
+    if projects:
+
+        st.subheader("📂 Projects")
+
+        for project in projects:
+
+            with st.expander(project.get("title", "Project")):
+
+                st.write(project.get("description", ""))
+
+    # ===================================================
+    # CERTIFICATIONS
+    # ===================================================
+
+    certifications = ai_response.get("certifications", [])
+
+    if certifications:
+
+        st.subheader("📜 Certifications")
+
+        for cert in certifications:
+            st.success(cert)
+
+    # ===================================================
+    # ACHIEVEMENTS
+    # ===================================================
+
+    achievements = ai_response.get("achievements", [])
+
+    if achievements:
+
+        st.subheader("🏆 Achievements")
+
+        for achievement in achievements:
+            st.success(achievement)
+
+    # ===================================================
+    # TOOLS
+    # ===================================================
+
+    tools = ai_response.get("tools", [])
+
+    if tools:
+
+        st.subheader("🛠 Tools")
+
+        for tool in tools:
+            st.success(tool)
+
+    # ===================================================
+    # LANGUAGES
+    # ===================================================
+
+    languages = ai_response.get("languages", [])
+
+    if languages:
+
+        st.subheader("🌍 Languages")
+
+        for language in languages:
+            st.success(language)
+
+    # ===================================================
+    # SUMMARY
+    # ===================================================
+
+    summary = ai_response.get("summary", "")
+
+    if summary:
+
+        st.subheader("📝 Professional Summary")
+
+        st.info(summary)

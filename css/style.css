@@ -1,0 +1,36 @@
+/* Main Background */
+
+.main {
+    background-color: #0E1117;
+}
+
+/* Card */
+
+.card {
+    background-color: #1E1E1E;
+    padding: 20px;
+    border-radius: 15px;
+    border: 1px solid #333;
+    margin-bottom: 20px;
+}
+
+/* Section Titles */
+
+.section-title {
+    color: #4F8BF9;
+    font-size: 26px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+/* Skill Badge */
+
+.badge {
+    display: inline-block;
+    background: #4F8BF9;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 20px;
+    margin: 5px;
+    font-size: 14px;
+}
