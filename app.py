@@ -1,3 +1,4 @@
+import html
 import streamlit as st
 
 # -------------------- PAGE CONFIG -------------------- #
@@ -11,6 +12,62 @@ st.set_page_config(
 from utils import extract_text_from_pdf
 from llm import analyze_resume
 
+
+# ==========================================================
+# UI COMPONENTS
+# ==========================================================
+
+# ==========================================================
+# UI HELPERS
+# ==========================================================
+
+def section_title(title, icon):
+    st.markdown(
+        f"""
+        <h3 style="
+        color:#F8FAFC;
+        margin-bottom:18px;
+        font-weight:700;">
+        {icon} {title}
+        </h3>
+        """,
+        unsafe_allow_html=True
+    )
+
+
+def is_non_empty(value):
+    if value is None:
+        return False
+    if isinstance(value, str):
+        return bool(value.strip())
+    if isinstance(value, list):
+        return any(is_non_empty(item) for item in value)
+    return bool(value)
+
+
+def sanitize_text(value):
+    if value is None:
+        return ""
+    return html.escape(str(value)).replace("\n", "<br>")
+
+
+def skill_badges(skills):
+    filtered_skills = [skill for skill in skills if is_non_empty(skill)] if skills else []
+
+    if not filtered_skills:
+        st.info("No skills found.")
+        return
+
+    html = ""
+
+    for skill in filtered_skills:
+        html += f"""
+        <span class="badge">
+            {sanitize_text(skill)}
+        </span>
+        """
+
+    st.markdown(html, unsafe_allow_html=True)
 
 # -------------------- LOAD CSS -------------------- #
 def load_css():
@@ -26,19 +83,18 @@ load_css()
 
 # -------------------- HEADER -------------------- #
 st.markdown("""
-<div style="text-align:center; padding:20px;">
+<div class="hero">
 
-<h1 style="color:#4F8BF9; font-size:55px;">
+<h1 class="hero-title">
 🤖 AI Resume Parser
 </h1>
 
-<h4 style="color:gray;">
-Powered by Google Gemini AI
-</h4>
+<p class="hero-subtitle">
+AI-Powered Resume Parsing with Google Gemini
+</p>
 
-<p style="color:#A0A0A0;">
-Upload your resume and let AI automatically extract structured information
-such as personal details, skills, education, projects and professional summary.
+<p class="hero-description">
+Extract structured information from resumes in seconds using Artificial Intelligence.
 </p>
 
 </div>
@@ -48,9 +104,12 @@ st.divider()
 
 
 # -------------------- FILE UPLOADER -------------------- #
+st.markdown("### 📄 Upload Resume")
+
 uploaded_file = st.file_uploader(
-    "Upload Resume",
-    type=["pdf"]
+    "",
+    type=["pdf"],
+    help="Upload a PDF resume to begin AI parsing."
 )
 
 
@@ -60,188 +119,326 @@ uploaded_file = st.file_uploader(
 
 if uploaded_file:
 
-    st.success("Resume uploaded successfully!")
+    st.success("✅ Resume uploaded successfully.")
 
     # Extract text
     resume_text = extract_text_from_pdf(uploaded_file)
 
     # Gemini Analysis
-    ai_response = analyze_resume(resume_text)
+    with st.spinner("🤖 Gemini AI is analyzing your resume..."):
+        ai_response = analyze_resume(resume_text)
 
    
-    # ===================================================
-    # Candidate Information + Skills
-    # ===================================================
+   
+    # ==========================================================
+    # PROFILE + SKILLS
+    # ==========================================================
 
-    left, right = st.columns([1, 1])
+    left, right = st.columns(2, gap="large")
+
+    # ---------------- Candidate ---------------- #
 
     with left:
 
-        st.markdown("""
+        st.markdown(f"""
         <div class="card">
-        <div class="section-title">
-        👤 Candidate Information
+
+        <h3>👤 Candidate Information</h3>
+
+        <p><b>Name</b><br>{ai_response.get("name","Not Available")}</p>
+
+        <p><b>Email</b><br>{ai_response.get("email","Not Available")}</p>
+
+        <p><b>Phone</b><br>{ai_response.get("phone","Not Available")}</p>
+
         </div>
         """, unsafe_allow_html=True)
 
-        st.write(f"**👤 Name:** {ai_response.get('name', 'Not Available')}")
-        st.write(f"**📧 Email:** {ai_response.get('email', 'Not Available')}")
-        st.write(f"**📱 Phone:** {ai_response.get('phone', 'Not Available')}")
 
-        st.markdown("</div>", unsafe_allow_html=True)
+    # ---------------- Skills ---------------- #
 
     with right:
 
-        st.subheader("💻 Skills")
+        st.markdown('<div class="card">', unsafe_allow_html=True)
 
-        skills = ai_response.get("skills", [])
+        section_title("Skills", "💻")
 
-        if skills:
-            for skill in skills:
-                st.success(skill)
-        else:
-            st.info("No skills found.")
+        skill_badges(ai_response.get("skills", []))
 
-    # ===================================================
+        st.markdown("</div>", unsafe_allow_html=True)
+
+
+    # ==========================================================
+    # ATS SCORE
+    # ==========================================================
+
+    ats_score = ai_response.get("ats_score", 0)
+
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+
+    section_title("ATS Resume Score", "⭐")
+
+    st.progress(ats_score / 100)
+
+    col1, col2, col3 = st.columns([1,1,1])
+
+    with col2:
+
+        st.metric(
+            label="Overall Score",
+            value=f"{ats_score}/100"
+        )
+
+    if ats_score >= 90:
+        st.success("🌟 Excellent Resume")
+
+    elif ats_score >= 75:
+        st.success("✅ Good Resume")
+
+    elif ats_score >= 60:
+        st.warning("⚠️ Average Resume")
+
+    else:
+        st.error("❌ Resume Needs Improvement")
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+
+    # ==========================================================
     # EDUCATION
-    # ===================================================
+    # ==========================================================
 
     education = ai_response.get("education", [])
+    if isinstance(education, dict):
+        education = [education]
 
-    if education:
+    valid_education = [
+        edu for edu in education
+        if any(is_non_empty(edu.get(key, "")) for key in ("degree", "institution", "location", "start_date", "end_date", "grade"))
+    ]
 
-        st.subheader("🎓 Education")
+    if valid_education:
 
-        for edu in education:
+        st.markdown('<div class="card">', unsafe_allow_html=True)
 
-            st.markdown(f"### {edu.get('degree', '')}")
+        section_title("Education", "🎓")
 
-            st.write(f"🏫 Institution: {edu.get('institution', '')}")
+        for edu in valid_education:
+            degree = sanitize_text(edu.get("degree", ""))
+            institution = sanitize_text(edu.get("institution", ""))
+            location = sanitize_text(edu.get("location", ""))
+            start_date = sanitize_text(edu.get("start_date", ""))
+            end_date = sanitize_text(edu.get("end_date", ""))
+            grade = sanitize_text(edu.get("grade", ""))
 
-            st.write(f"📍 Location: {edu.get('location', '')}")
+            st.markdown(f"""
+            <div class="edu-card">
 
-            start = edu.get("start_date", "")
-            end = edu.get("end_date", "")
+                <div class="edu-degree">
+                    {degree}
+                </div>
 
-            if start or end:
-                st.write(f"📅 Duration: {start} - {end}")
+                <div class="edu-inst">
+                    🏫 {institution}
+                </div>
 
-            st.write(f"🎖 Grade: {edu.get('grade', '')}")
+                <div class="edu-info">
 
-            st.divider()
+                    📍 {location}
 
-    # ===================================================
-    # EXPERIENCE
-    # ===================================================
+                </div>
 
-    experience = ai_response.get("experience", [])
+                <div class="edu-info">
 
-    if experience:
+                    📅 {start_date} - {end_date}
 
-        st.subheader("💼 Experience")
+                </div>
 
-        for exp in experience:
+                <div class="edu-grade">
 
-            with st.expander(exp.get("company", "Experience")):
+                    🎖 {grade}
 
-                st.write(f"**Role:** {exp.get('role', '')}")
-                st.write(f"**Duration:** {exp.get('duration', '')}")
-                st.write(exp.get("description", ""))
+                </div>
 
-    # ===================================================
-    # INTERNSHIPS
-    # ===================================================
+            </div>
+            """, unsafe_allow_html=True)
 
-    internships = ai_response.get("internships", [])
+        st.markdown("</div>", unsafe_allow_html=True)
 
-    if internships:
 
-        st.subheader("🏢 Internships")
-
-        for intern in internships:
-
-            with st.expander(intern.get("organization", "Internship")):
-
-                st.write(f"**Role:** {intern.get('role', '')}")
-                st.write(f"**Duration:** {intern.get('duration', '')}")
-                st.write(intern.get("description", ""))
-
-    # ===================================================
+    # ==========================================================
     # PROJECTS
-    # ===================================================
+    # ==========================================================
 
     projects = ai_response.get("projects", [])
+    if isinstance(projects, dict):
+        projects = [projects]
 
-    if projects:
+    valid_projects = [
+        project for project in projects
+        if any(is_non_empty(project.get(key, "")) for key in ("title", "description", "technologies"))
+    ]
 
-        st.subheader("📂 Projects")
+    if valid_projects:
 
-        for project in projects:
+        st.markdown('<div class="card">', unsafe_allow_html=True)
 
-            with st.expander(project.get("title", "Project")):
+        section_title("Projects", "📂")
 
-                st.write(project.get("description", ""))
+        for project in valid_projects:
+            title = sanitize_text(project.get("title", "Untitled Project"))
+            desc = sanitize_text(project.get("description", "No description available."))
+            tech = project.get("technologies", []) or []
 
-    # ===================================================
+            with st.expander(f"🚀 {title}", expanded=False):
+                st.markdown(f"""
+                <div class="project-description">
+                {desc}
+                </div>
+                """, unsafe_allow_html=True)
+
+                if tech:
+                    st.markdown("#### 🛠 Technologies")
+                    skill_badges(tech)
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
+
+    # ==========================================================
     # CERTIFICATIONS
-    # ===================================================
+    # ==========================================================
 
     certifications = ai_response.get("certifications", [])
+    if isinstance(certifications, dict):
+        certifications = [certifications]
 
-    if certifications:
+    valid_certifications = [
+        cert for cert in certifications
+        if any(is_non_empty(cert.get(key, "")) for key in ("name", "issuer", "year"))
+    ]
 
-        st.subheader("📜 Certifications")
+    if valid_certifications:
 
-        for cert in certifications:
-            st.success(cert)
+        st.markdown('<div class="card">', unsafe_allow_html=True)
 
-    # ===================================================
+        section_title("Certifications", "📜")
+
+        for cert in valid_certifications:
+            st.markdown(f"""
+            <div class="simple-card">
+                <b>{sanitize_text(cert.get("name", ""))}</b><br>
+                <span>{sanitize_text(cert.get("issuer", ""))}</span><br>
+                <small>{sanitize_text(cert.get("year", ""))}</small>
+            </div>
+            """, unsafe_allow_html=True)
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
+
+    # ==========================================================
     # ACHIEVEMENTS
-    # ===================================================
+    # ==========================================================
 
-    achievements = ai_response.get("achievements", [])
+    achievements = ai_response.get("achievements", []) or []
+    valid_achievements = [achievement for achievement in achievements if is_non_empty(achievement)]
 
-    if achievements:
+    if valid_achievements:
 
-        st.subheader("🏆 Achievements")
+        st.markdown('<div class="card">', unsafe_allow_html=True)
 
-        for achievement in achievements:
-            st.success(achievement)
+        section_title("Achievements", "🏆")
 
-    # ===================================================
-    # TOOLS
-    # ===================================================
+        for achievement in valid_achievements:
+            st.markdown(f"✅ {sanitize_text(achievement)}")
 
-    tools = ai_response.get("tools", [])
+        st.markdown("</div>", unsafe_allow_html=True)
 
-    if tools:
 
-        st.subheader("🛠 Tools")
+    # ==========================================================
+    # PROFESSIONAL LINKS
+    # ==========================================================
 
-        for tool in tools:
-            st.success(tool)
+    github = ai_response.get("github","")
+    linkedin = ai_response.get("linkedin","")
 
-    # ===================================================
-    # LANGUAGES
-    # ===================================================
+    if github or linkedin:
 
-    languages = ai_response.get("languages", [])
+        st.markdown('<div class="card">', unsafe_allow_html=True)
 
-    if languages:
+        section_title("Professional Links", "🔗")
 
-        st.subheader("🌍 Languages")
+        if github:
+            st.markdown(f"**GitHub:** {github}")
 
-        for language in languages:
-            st.success(language)
+        if linkedin:
+            st.markdown(f"**LinkedIn:** {linkedin}")
 
-    # ===================================================
-    # SUMMARY
-    # ===================================================
+        st.markdown("</div>", unsafe_allow_html=True)
+
+
+    # ==========================================================
+    # PROFESSIONAL SUMMARY
+    # ==========================================================
 
     summary = ai_response.get("summary", "")
 
-    if summary:
+    if is_non_empty(summary):
 
-        st.subheader("📝 Professional Summary")
+        st.markdown('<div class="card">', unsafe_allow_html=True)
 
-        st.info(summary)
+        section_title("Professional Summary", "📝")
+
+        st.markdown(f"""
+        <div class="summary-box">
+        {sanitize_text(summary)}
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
+
+    # ==========================================================
+    # AI SUGGESTIONS
+    # ==========================================================
+
+    suggestions = ai_response.get("suggestions", []) or []
+    valid_suggestions = [suggestion for suggestion in suggestions if is_non_empty(suggestion)]
+
+    if valid_suggestions:
+
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+
+        section_title("AI Suggestions", "💡")
+
+        for suggestion in valid_suggestions:
+            st.markdown(f"""
+            <div class="suggestion-card">
+                ✅ {sanitize_text(suggestion)}
+            </div>
+            """, unsafe_allow_html=True)
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
+
+
+    st.markdown("---")
+
+    st.markdown("""
+    <div class="footer">
+
+    <h3>🤖 AI Resume Parser</h3>
+
+    <p>
+    Powered by Google Gemini AI
+    </p>
+
+    <p>
+    Designed & Developed by <b>Tushar Patel</b>
+    </p>
+
+    <p style="font-size:13px;">
+    AI-Powered Resume Parsing System • Version 1.0
+    </p>
+
+    </div>
+    """, unsafe_allow_html=True)

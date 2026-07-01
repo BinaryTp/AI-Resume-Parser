@@ -1,36 +1,348 @@
-/* Main Background */
+/* ==========================================
+   AI Resume Parser - Professional Theme
+========================================== */
 
-.main {
-    background-color: #0E1117;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+html, body, [class*="css"]{
+    font-family: 'Inter', sans-serif;
 }
 
-/* Card */
+/* ---------- Main Background ---------- */
 
-.card {
-    background-color: #1E1E1E;
-    padding: 20px;
-    border-radius: 15px;
-    border: 1px solid #333;
-    margin-bottom: 20px;
+.stApp{
+    background:#0F172A;
+    color:#F8FAFC;
 }
 
-/* Section Titles */
+/* ---------- Hero Section ---------- */
 
-.section-title {
-    color: #4F8BF9;
-    font-size: 26px;
-    font-weight: bold;
-    margin-bottom: 10px;
+.hero{
+    text-align:center;
+    padding:25px 0 35px 0;
 }
 
-/* Skill Badge */
+.hero-title{
+    font-size:54px;
+    font-weight:700;
+    color:#F8FAFC;
+    margin-bottom:8px;
+}
 
-.badge {
-    display: inline-block;
-    background: #4F8BF9;
-    color: white;
-    padding: 8px 15px;
-    border-radius: 20px;
-    margin: 5px;
-    font-size: 14px;
+.hero-subtitle{
+    color:#60A5FA;
+    font-size:20px;
+    font-weight:600;
+    margin-bottom:12px;
+}
+
+.hero-description{
+    color:#94A3B8;
+    font-size:17px;
+}
+
+/* ---------- Card ---------- */
+
+.card{
+
+    background:#1E293B;
+
+    border:1px solid #334155;
+
+    border-radius:18px;
+
+    padding:25px;
+
+    margin-bottom:20px;
+
+    box-shadow:0 10px 25px rgba(0,0,0,.25);
+
+    transition:.3s;
+}
+
+.card:hover{
+
+    transform:translateY(-3px);
+
+    border-color:#3B82F6;
+}
+
+/* ---------- Section Heading ---------- */
+
+.section-title{
+
+    color:#60A5FA;
+
+    font-size:26px;
+
+    font-weight:700;
+
+    margin-bottom:20px;
+}
+
+/* ---------- Skill Badge ---------- */
+
+.badge{
+
+    display:inline-block;
+
+    background:#2563EB;
+
+    color:white;
+
+    padding:8px 18px;
+
+    margin:6px;
+
+    border-radius:25px;
+
+    font-size:14px;
+
+    font-weight:600;
+}
+
+
+
+/* ---------- Footer ---------- */
+
+.footer{
+
+    text-align:center;
+
+    color:#94A3B8;
+
+    margin-top:50px;
+
+    padding:20px;
+
+    font-size:14px;
+}
+
+/* ---------- File Uploader ---------- */
+
+[data-testid="stFileUploader"]{
+
+    border:2px dashed #3B82F6;
+
+    border-radius:15px;
+
+    padding:20px;
+
+    background:#1E293B;
+}
+
+
+/* ---------- Candidate Info ---------- */
+
+.info-item{
+
+    margin-bottom:18px;
+
+}
+
+.label{
+
+    color:#94A3B8;
+
+    font-size:13px;
+
+    font-weight:600;
+
+    text-transform:uppercase;
+
+    letter-spacing:1px;
+
+}
+
+.value{
+
+    color:white;
+
+    font-size:17px;
+
+    margin-top:5px;
+
+    font-weight:500;
+
+}
+
+
+/* ---------- Metric ---------- */
+
+[data-testid="stMetric"]{
+
+    background:#111827;
+
+    border:1px solid #334155;
+
+    border-radius:15px;
+
+    padding:18px;
+
+}
+
+
+/* ---------- Education ---------- */
+
+.edu-card{
+
+    background:#111827;
+
+    border:1px solid #334155;
+
+    border-radius:14px;
+
+    padding:18px;
+
+    margin-bottom:18px;
+
+}
+
+.edu-degree{
+
+    font-size:20px;
+
+    color:#F8FAFC;
+
+    font-weight:700;
+
+    margin-bottom:8px;
+
+}
+
+.edu-inst{
+
+    color:#60A5FA;
+
+    margin-bottom:6px;
+
+}
+
+.edu-info{
+
+    color:#CBD5E1;
+
+    margin-bottom:4px;
+
+}
+
+.edu-grade{
+
+    margin-top:10px;
+
+    color:#22C55E;
+
+    font-weight:600;
+
+}
+
+
+
+/* ---------- Project ---------- */
+
+.project-description{
+
+    color:#CBD5E1;
+
+    font-size:15px;
+
+    line-height:1.8;
+
+    margin-bottom:18px;
+
+}
+
+.streamlit-expanderHeader{
+
+    font-size:17px;
+
+    font-weight:600;
+
+    color:#F8FAFC;
+
+}
+
+/* ---------- Simple Cards ---------- */
+
+.simple-card{
+
+    background:#111827;
+
+    border:1px solid #334155;
+
+    border-radius:12px;
+
+    padding:15px;
+
+    margin-bottom:12px;
+
+}
+
+.simple-card span{
+
+    color:#60A5FA;
+
+}
+
+.simple-card small{
+
+    color:#94A3B8;
+
+}
+
+
+/* ---------- Summary ---------- */
+
+.summary-box{
+
+    background:#111827;
+
+    border-left:5px solid #3B82F6;
+
+    padding:20px;
+
+    border-radius:12px;
+
+    color:#E2E8F0;
+
+    line-height:1.8;
+
+}
+
+/* ---------- Suggestions ---------- */
+
+.suggestion-card{
+
+    background:#111827;
+
+    border-left:5px solid #22C55E;
+
+    padding:15px;
+
+    border-radius:10px;
+
+    margin-bottom:12px;
+
+    color:#E2E8F0;
+
+}
+
+/* ---------- Footer ---------- */
+
+.footer{
+
+    text-align:center;
+
+    padding:40px 0;
+
+    color:#94A3B8;
+
+}
+
+.footer h3{
+
+    color:#F8FAFC;
+
+    margin-bottom:8px;
+
 }
