@@ -17,6 +17,14 @@ Extract structured information from PDF resumes in seconds with AI.
 
 ---
 
+## 🚀 Live Demo
+
+👉 **Try the application here:**
+
+https://ai-resume-parser-gegru7lbqupsqsqvpwawpm.streamlit.app/
+
+---
+
 # 📌 Overview
 
 AI Resume Parser is a modern web application that automatically extracts important information from resumes using **Google Gemini AI**.
