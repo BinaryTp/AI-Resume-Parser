@@ -22,17 +22,33 @@ from llm import analyze_resume
 # ==========================================================
 
 def section_title(title, icon):
+
     st.markdown(
         f"""
         <h3 style="
-        color:#F8FAFC;
-        margin-bottom:18px;
-        font-weight:700;">
-        {icon} {title}
+            color:white;
+            margin-bottom:20px;
+            font-size:24px;
+            font-weight:700;
+        ">
+            {icon} {title}
         </h3>
         """,
         unsafe_allow_html=True
     )
+
+
+def skill_badges(skills):
+
+    html = ""
+
+    for skill in skills:
+
+        html += f'<span class="badge">{sanitize_text(skill)}</span> '
+
+    st.markdown(html, unsafe_allow_html=True)
+
+
 
 
 def is_non_empty(value):
@@ -51,23 +67,6 @@ def sanitize_text(value):
     return html.escape(str(value)).replace("\n", "<br>")
 
 
-def skill_badges(skills):
-    filtered_skills = [skill for skill in skills if is_non_empty(skill)] if skills else []
-
-    if not filtered_skills:
-        st.info("No skills found.")
-        return
-
-    html = ""
-
-    for skill in filtered_skills:
-        html += f"""
-        <span class="badge">
-            {sanitize_text(skill)}
-        </span>
-        """
-
-    st.markdown(html, unsafe_allow_html=True)
 
 # -------------------- LOAD CSS -------------------- #
 def load_css():
@@ -159,14 +158,11 @@ if uploaded_file:
 
     with right:
 
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-
         section_title("Skills", "💻")
 
         skill_badges(ai_response.get("skills", []))
 
         st.markdown("</div>", unsafe_allow_html=True)
-
 
     # ==========================================================
     # ATS SCORE
@@ -174,9 +170,15 @@ if uploaded_file:
 
     ats_score = ai_response.get("ats_score", 0)
 
-    st.markdown('<div class="card">', unsafe_allow_html=True)
 
-    section_title("ATS Resume Score", "⭐")
+    st.markdown(
+        """
+        <h3 style="color:white; margin-bottom:20px;">
+            ⭐ ATS Resume Score
+        </h3>
+        """,
+        unsafe_allow_html=True
+    )
 
     st.progress(ats_score / 100)
 
@@ -219,8 +221,6 @@ if uploaded_file:
 
     if valid_education:
 
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-
         section_title("Education", "🎓")
 
         for edu in valid_education:
@@ -232,39 +232,24 @@ if uploaded_file:
             grade = sanitize_text(edu.get("grade", ""))
 
             st.markdown(f"""
-            <div class="edu-card">
+            <div style="background:#111827;
+            padding:20px;
+            border-radius:12px;
+            border:1px solid #334155;">
 
-                <div class="edu-degree">
-                    {degree}
-                </div>
+            <h3>{degree}</h3>
 
-                <div class="edu-inst">
-                    🏫 {institution}
-                </div>
+            <p>🏫 {institution}</p>
 
-                <div class="edu-info">
+            <p>📍 {location}</p>
 
-                    📍 {location}
+            <p>📅 {start_date} - {end_date}</p>
 
-                </div>
-
-                <div class="edu-info">
-
-                    📅 {start_date} - {end_date}
-
-                </div>
-
-                <div class="edu-grade">
-
-                    🎖 {grade}
-
-                </div>
+            <p>🎖 {grade}</p>
 
             </div>
             """, unsafe_allow_html=True)
-
-        st.markdown("</div>", unsafe_allow_html=True)
-
+       
 
     # ==========================================================
     # PROJECTS
@@ -281,7 +266,6 @@ if uploaded_file:
 
     if valid_projects:
 
-        st.markdown('<div class="card">', unsafe_allow_html=True)
 
         section_title("Projects", "📂")
 
@@ -319,8 +303,7 @@ if uploaded_file:
 
     if valid_certifications:
 
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-
+        
         section_title("Certifications", "📜")
 
         for cert in valid_certifications:
@@ -344,8 +327,6 @@ if uploaded_file:
 
     if valid_achievements:
 
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-
         section_title("Achievements", "🏆")
 
         for achievement in valid_achievements:
@@ -362,8 +343,6 @@ if uploaded_file:
     linkedin = ai_response.get("linkedin","")
 
     if github or linkedin:
-
-        st.markdown('<div class="card">', unsafe_allow_html=True)
 
         section_title("Professional Links", "🔗")
 
@@ -384,8 +363,6 @@ if uploaded_file:
 
     if is_non_empty(summary):
 
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-
         section_title("Professional Summary", "📝")
 
         st.markdown(f"""
@@ -405,8 +382,6 @@ if uploaded_file:
     valid_suggestions = [suggestion for suggestion in suggestions if is_non_empty(suggestion)]
 
     if valid_suggestions:
-
-        st.markdown('<div class="card">', unsafe_allow_html=True)
 
         section_title("AI Suggestions", "💡")
 
