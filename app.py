@@ -248,7 +248,7 @@ if uploaded_file:
             <p>🎖 {grade}</p>
 
             </div>
-            """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
        
 
     # ==========================================================
