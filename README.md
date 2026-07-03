@@ -185,9 +185,6 @@ B.Tech CSE (AI & ML)
 
 Python • Machine Learning • AI • Full Stack Development
 
-GitHub:
-https://github.com/BinaryTp
-
 LinkedIn:
 https://linkedin.com/in/tushar-patel-2a7167323
 
